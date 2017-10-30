@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Medical Technology</title>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.6.0/css/bulma.min.css">
+    </head>
+    <body>
+        {% block navbar %}
+        <nav class="navbar is-transparent" role="navigation" aria-label="main navigation">
+            <div class="navbar-menu">
+                <div class="navbar-start">
+                    <a class="navbar-item" href="/">Home</a>
+                    <div class="navbar-item has-dropdown is-hoverable">
+                        <a class="navbar-link">Administration</a>
+                        <div class="navbar-dropdown is-boxed">
+                            <div class="navbar-content">
+                                <a class="navbar-item">Administrative Team</a>
+                                <a class="navbar-item">Head of Department/Center</a>
+                                <a class="navbar-item">Administrative Board</a>
+                                <a class="navbar-item">Faculty Senate</a>
+                                <a class="navbar-item">Organization Structure</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="navbar-end">
+                    <a class="navbar-item" href="{{ url_for('auth.main') }}">Account</a>
+                </div>
+            </div>
+        </nav>
+        {% endblock %}
+        {% block content %}
+        {% endblock %}
+    </body>
+</html>
