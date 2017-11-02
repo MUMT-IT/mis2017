@@ -1,4 +1,5 @@
 import os
+from flask_login import LoginManager
 from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_script import Manager
@@ -17,6 +18,14 @@ app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
 manager = Manager(app)
 
 db = SQLAlchemy(app)
+
+login_manager = LoginManager(app)
+login_manager.session_protection = 'strong'
+login_manager.login_view = 'auth.main'
+
+@login_manager.user_loader
+def load_user(user_id):
+    return models.Person.query.get(user_id)
 
 @app.route('/')
 def main():

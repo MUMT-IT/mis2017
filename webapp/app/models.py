@@ -1,7 +1,8 @@
-from main import db
+from flask_login import UserMixin
+from main import db, login_manager
 from sqlalchemy.dialects.postgresql import JSON
 
-class Person(db.Model):
+class Person(UserMixin, db.Model):
     __tablename__ = 'persons'
     id = db.Column(db.Integer, primary_key=True)
     firstname_en = db.Column(db.String(60))

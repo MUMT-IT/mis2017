@@ -5,7 +5,9 @@ import google_auth_oauthlib.flow
 from flask import (render_template, url_for, redirect,
                     session, jsonify, request)
 from .. import auth
+import models
 from forms import UserRegisterForm, LogInForm
+from flask_login import login_user, login_required, logout_user
 
 CLIENT_SECRETS_FILE = 'client_secret.json'
 SCOPES = ['https://www.googleapis.com/auth/drive.metadata.readonly']
@@ -34,15 +36,17 @@ def google_login():
     form = LogInForm()
     if form.validate_on_submit():
         login_email = form.email.data + '@mahidol.edu'
+        session['login_email'] = login_email
+        print(session['login_email'])
     else:
         login_email = None
     flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(CLIENT_SECRETS_FILE, scopes=SCOPES)
     flow.redirect_uri = url_for('auth.oauth2callback', _external=True)
     authorization_url, state = flow.authorization_url(
-        access_type='offline',
-        include_granted_scopes='true',
-        login_hint=login_email
-    )
+            access_type='offline',
+            include_granted_scopes='true',
+            login_hint=login_email
+        )
     session['state'] = state
     return redirect(authorization_url)
 
@@ -59,8 +63,30 @@ def oauth2callback():
     # save these credentials in a persistent database instead
     credentials = flow.credentials
     session['credentials'] = credentials_to_dict(credentials)
-    return redirect('/')
+    return redirect(url_for('auth.weblogin'))
 
+
+@login_required
+@auth.route('/weblogin')
+def weblogin():
+    print(session.keys())
+    if 'credentials' in session and 'login_email' in session:
+        user = models.Person.query.filter_by(email=session['login_email']).first()
+        login_user(user, True)
+        return redirect('/')
+    else:
+        return 'Error! no credentials or email for logging in.'
+
+
+@login_required
+@auth.route('/weblogout')
+def weblogout():
+    if 'credentials' in session:
+        del session['credentials']
+    if 'login_email' in session:
+        del session['login_email']
+    logout_user()
+    return redirect(url_for('auth.main'))
 
 @auth.route('/revoke')
 def revoke():
@@ -75,13 +101,6 @@ def revoke():
         return ('Credentials successfully revoked.')
     else:
         return ('An error occured.')
-
-
-@auth.route('/clear')
-def clear_credentials():
-    if 'credentials' in session:
-        del session['credentials']
-    return ('Credentials have been cleared.')
 
 
 def credentials_to_dict(credentials):
