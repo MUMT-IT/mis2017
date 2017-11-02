@@ -4,11 +4,21 @@
     <h1 class="title has-text-centered">Log In</h1>
     <div class="columns is-centered">
         <div class="column is-one-third">
+            <form action="{{ url_for('auth.google_login') }}">
             <div class="card">
                 <div class="card-content">
                     <p class="subtitle">
                         Please log in using your Gmain account.
                     </p>
+                        {{ form.csrf_token }}
+                        <div class="field has-addons">
+                            <p class="control">
+                                {{ form.email(class="input") }}
+                            </p>
+                            <p class="control">
+                                <a class="button is-static">@mahidol.edu</a>
+                            </p>
+                        </div>
                 </div>
                 <footer class="card-footer">
                     <p class="card-footer-item">
@@ -17,12 +27,13 @@
                         </a>
                     </p>
                     <p class="card-footer-item">
-                        <a href="{{ url_for('auth.google_login') }}">
+                        <button class="button is-link" type="submit" value="submit">
                             Log In
-                        </a>
+                        </button>
                     </p>
                 </footer>
             </div>
+            </form>
         </div>
     </div>
 </div>

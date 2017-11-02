@@ -1,8 +1,11 @@
+import requests
 import google.oauth2.credentials
 import googleapiclient.discovery
 import google_auth_oauthlib.flow
-from flask import render_template, url_for, redirect, session, jsonify, request
+from flask import (render_template, url_for, redirect,
+                    session, jsonify, request)
 from .. import auth
+from forms import UserRegisterForm, LogInForm
 
 CLIENT_SECRETS_FILE = 'client_secret.json'
 SCOPES = ['https://www.googleapis.com/auth/drive.metadata.readonly']
@@ -12,7 +15,8 @@ API_VERSION = 'v2'
 @auth.route('/')
 def main():
     if 'credentials' not in session:
-        return render_template("auth/main.html")
+        login_form = LogInForm()
+        return render_template("auth/main.html", form=login_form)
     else:
         credentials = google.oauth2.credentials.Credentials(
             **session['credentials']
@@ -25,13 +29,19 @@ def main():
         return jsonify(**files)
 
 
-@auth.route('/login')
+@auth.route('/login', methods=['GET', 'POST'])
 def google_login():
+    form = LogInForm()
+    if form.validate_on_submit():
+        login_email = form.email.data + '@mahidol.edu'
+    else:
+        login_email = None
     flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(CLIENT_SECRETS_FILE, scopes=SCOPES)
     flow.redirect_uri = url_for('auth.oauth2callback', _external=True)
     authorization_url, state = flow.authorization_url(
         access_type='offline',
-        include_granted_scopes='true'
+        include_granted_scopes='true',
+        login_hint=login_email
     )
     session['state'] = state
     return redirect(authorization_url)
@@ -49,7 +59,7 @@ def oauth2callback():
     # save these credentials in a persistent database instead
     credentials = flow.credentials
     session['credentials'] = credentials_to_dict(credentials)
-    return redirect(url_for('auth.main'))
+    return redirect('/')
 
 
 @auth.route('/revoke')
@@ -67,6 +77,13 @@ def revoke():
         return ('An error occured.')
 
 
+@auth.route('/clear')
+def clear_credentials():
+    if 'credentials' in session:
+        del session['credentials']
+    return ('Credentials have been cleared.')
+
+
 def credentials_to_dict(credentials):
     return {'token': credentials.token,
             'refresh_token': credentials.refresh_token,
@@ -75,3 +92,13 @@ def credentials_to_dict(credentials):
             'client_secret': credentials.client_secret,
             'scopes': credentials.scopes
             }
+
+@auth.route('/register', methods=['GET', 'POST'])
+def register():
+    form = UserRegisterForm()
+    if form.validate_on_submit():
+        firstname_en = form.firstname_en.data
+        email = form.email.data
+        form.firstname_en.data = ''
+        return jsonify([{'name': firstname_en, 'email': email}])
+    return render_template('auth/user_register.html', form=form)
