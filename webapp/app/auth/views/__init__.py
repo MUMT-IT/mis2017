@@ -11,9 +11,7 @@ from forms import UserRegisterForm, LogInForm
 from flask_login import login_user, login_required, logout_user
 
 CLIENT_SECRETS_FILE = 'client_secret.json'
-SCOPES = ['https://www.googleapis.com/auth/drive.metadata.readonly']
-API_SERVICE_NAME = 'drive'
-API_VERSION = 'v2'
+SCOPES = ['https://www.googleapis.com/auth/drive']
 
 @auth.route('/')
 def main():
@@ -21,15 +19,7 @@ def main():
         login_form = LogInForm()
         return render_template("auth/main.html", form=login_form)
     else:
-        credentials = google.oauth2.credentials.Credentials(
-            **session['credentials']
-        )
-        drive = googleapiclient.discovery.build(
-            API_SERVICE_NAME, API_VERSION, credentials=credentials
-        )
-        files = drive.files().list().execute()
-        session['credentials'] = credentials_to_dict(credentials)
-        return jsonify(**files)
+        return redirect('/')
 
 
 @auth.route('/login', methods=['GET', 'POST'])
