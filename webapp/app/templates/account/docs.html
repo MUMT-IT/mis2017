@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h3 class="title">Personal Account</h3>
+    <div class="tabs is-centered is-boxed">
+        <ul>
+            <li><a href="{{ url_for('account.view_profile') }}">Profile</a></li>
+            <li><a>Meetings</a></li>
+            <li class="is-active"><a>Documents</a></li>
+        </ul>
+    </div>
+    <div class="columns">
+        <div class="column">
+            <table class="table">
+                <tbody>
+                {% for file in files %}
+                    <tr>
+                        <td>
+                            <span class="icon is-medium">
+                                {% if file['mimeType'] == 'application/vnd.google-apps.folder' %}
+                                <i class="fa fa-lg fa-folder-o"></i>
+                                {% else %}
+                                <i class="fa fa-lg fa-file-o"></i>
+                                {% endif %}
+                            </span>
+                        </td>
+                        <td>{{ file['title'] }}</td>
+                        <td>
+                            <a href="{{ file['alternateLink'] }}" target="_blank">
+                                <button class="button is-light">Open</button>
+                            </a>
+                        </td>
+                        <td>
+                            <a href="#" target="_blank">
+                                <button class="button is-light">Share</button>
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

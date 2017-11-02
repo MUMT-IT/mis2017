@@ -22,6 +22,9 @@ login_manager.login_view = 'auth.main'
 from auth import auth as auth_blueprint
 app.register_blueprint(auth_blueprint)
 
+from account import account as account_blueprint
+app.register_blueprint(account_blueprint)
+
 @login_manager.user_loader
 def load_user(user_id):
     return models.Person.query.get(user_id)
