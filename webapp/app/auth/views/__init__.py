@@ -4,8 +4,9 @@ import googleapiclient.discovery
 import google_auth_oauthlib.flow
 from flask import (render_template, url_for, redirect,
                     session, jsonify, request)
-from .. import auth
 import models
+from main import db
+from .. import auth
 from forms import UserRegisterForm, LogInForm
 from flask_login import login_user, login_required, logout_user
 
@@ -72,6 +73,9 @@ def weblogin():
     print(session.keys())
     if 'credentials' in session and 'login_email' in session:
         user = models.Person.query.filter_by(email=session['login_email']).first()
+        user.login = models.LogIn(credentials=session['credentials'])
+        db.session.add(user)
+        db.session.commit()
         login_user(user, True)
         return redirect('/')
     else:
