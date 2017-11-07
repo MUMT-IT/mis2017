@@ -1,6 +1,7 @@
 from flask import render_template, jsonify, session, redirect, url_for, request
 from flask_login import current_user, login_required
 from .. import account
+from forms import EventCalendar
 import google.oauth2.credentials
 import googleapiclient.discovery
 import pprint
@@ -19,10 +20,20 @@ def get_drive_service():
     credentials = google.oauth2.credentials.Credentials(
         **current_user.login.credentials
     )
-    drive_service = googleapiclient.discovery.build(
+    service = googleapiclient.discovery.build(
         'drive', 'v2', credentials=credentials
     )
-    return drive_service
+    return service
+
+
+def get_calendar_service():
+    credentials = google.oauth2.credentials.Credentials(
+        **current_user.login.credentials
+    )
+    service = googleapiclient.discovery.build(
+        'calendar', 'v3', credentials=credentials
+    )
+    return service
 
 
 def search_folder(title):
@@ -113,6 +124,7 @@ def manage_groups():
 @account.route('/cart')
 def view_cart():
     file_id = request.args.get('file_id', None)
+    cart_view = request.args.get('cart_view', 'event')
     if file_id:
         if 'files_cart' not in session:
             session['files_cart'] = [file_id]
@@ -126,4 +138,57 @@ def view_cart():
     for item in session['files_cart']:
         f = drive_service.files().get(fileId=item).execute()
         files.append(f)
-    return render_template('account/cart.html', files=files)
+    event_form = EventCalendar()
+    return render_template('account/cart.html', files=files, cart_view=cart_view, event_form=event_form)
+
+
+@login_required
+@account.route('/create_event_with_files', methods=['GET', 'POST'])
+def create_event_with_files():
+    drive_service = get_drive_service()
+    calendar_service = get_calendar_service()
+    attachments = []
+    for item in session['files_cart']:
+        f = drive_service.files().get(fileId=item).execute()
+        attachments.append({
+            'fileUrl': f['alternateLink'],
+            'mimeType': f['mimeType'],
+            'title': f['title']
+        })
+    form = EventCalendar()
+    if form.validate_on_submit():
+        summary = form.summary.data
+        location = form.summary.data
+        description = form.description.data
+        startdate = form.startdate.data
+        enddate = form.enddate.data
+        attendees = [a.strip() for a in form.attendees.data.split(',')]
+    else:
+        return "form not validated"
+
+    event = {
+        'summary': summary,
+        'location': location,
+        'description': description,
+        'start': {
+            'dateTime': startdate.strftime('%Y-%m-%dT%H:%M:%S'),
+            'timeZone': 'Asia/Bangkok',
+        },
+        'end': {
+            'dateTime': enddate.strftime('%Y-%m-%dT%H:%M:%S'),
+            'timeZone': 'Asia/Bangkok',
+        },
+        'attendees': attendees,
+        'reminders': {
+            'useDefault': False,
+            'overrides': [
+                {'method': 'email', 'minutes': 24 * 60},
+                {'method': 'popup', 'minutes': 10},
+            ]
+        },
+        'attachments': attachments
+    }
+    event = calendar_service.events().insert(calendarId='primary',
+                                                supportsAttachments=True,
+                                                body=event).execute()
+    return "Event has been created"

@@ -22,7 +22,6 @@
                         <th>Last viewed</th>
                         <th>Modified</th>
                         <th></th>
-                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -46,11 +45,6 @@
                                 <button class="button is-light">Open</button>
                             </a>
                         </td>
-                        <td>
-                            <a href="#" target="_blank">
-                                <button class="button is-light">Send</button>
-                            </a>
-                        </td>
                     </tr>
                 {% endfor %}
                 </tbody>
@@ -59,10 +53,69 @@
     </div>
     <div class="tabs is-centered is-boxed">
         <ul>
-            <li><a href="{{ url_for('account.view_profile') }}">Custom send</a></li>
-            <li><a href="{{ url_for('account.view_cart') }}">Group send</a></li>
+            <li><a href="{{ url_for('account.view_profile', cart_view='custom') }}">Custom send</a></li>
+            <li><a href="{{ url_for('account.view_cart', cart_view='group') }}">Group send</a></li>
             <li class="is-active"><a href="{{ url_for('account.view_docs') }}">Create event</a></li>
         </ul>
+    </div>
+    <div class="columns">
+        {% if cart_view=='event' %}
+        <div class="column is-half">
+            <h3 class="title">Event Information</h3>
+            <form action="{{ url_for('account.create_event_with_files') }}" method="POST">
+                {{ event_form.csrf_token }}
+                <div class="field">
+                    <label class="label">{{ event_form.summary.label }}</label>
+                    <div class="control">
+                        {{ event_form.summary(class="input") }}
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label">{{ event_form.description.label }}</label>
+                    <div class="control">
+                        {{ event_form.description(class="textarea", rows=4) }}
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label">{{ event_form.location.label }}</label>
+                    <div class="control">
+                        {{ event_form.location(class="input") }}
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label">{{ event_form.attendees.label }}</label>
+                    <div class="control">
+                        {{ event_form.attendees(class="input") }}
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label">{{ event_form.startdate.label }}</label>
+                    <div class="control">
+                        {{ event_form.startdate(class="input") }}
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label">{{ event_form.enddate.label }}</label>
+                    <div class="control">
+                        {{ event_form.enddate(class="input") }}
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="control">
+                        {{ event_form.submit(class="button is-link") }}
+                    </div>
+                </div>
+            </form>
+        </div>
+        {% elif cart_view=='custom' %}
+        <div class="column">
+            <h3>Custom</h3>
+        </div>
+        {% else %}
+        <div class="column">
+            <h3>Group</h3>
+        </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}
