@@ -7,14 +7,26 @@
         <ul>
             <li><a href="{{ url_for('account.view_profile') }}">Profile</a></li>
             <li><a>Meetings</a></li>
-            <li class="is-active"><a>Documents</a></li>
-            <li><a href="{{ url_for('account.view_cart') }}">
-                Cart <span class="tag">{{ session['files_cart']|length }}</span></a></li>
+            <li class="is-active"><a href="{{ url_for('account.view_docs') }}">Documents</a></li>
+            <li><a href="{{ url_for('account.view_cart') }}">Cart</a></li>
         </ul>
     </div>
+    <h3>/{{ folder_title }}</h3>
     <div class="columns">
         <div class="column">
             <table class="table">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Filename</th>
+                        <th>Description</th>
+                        <th>Last viewed</th>
+                        <th>Modified</th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                </thead>
                 <tbody>
                 {% for file in files %}
                     <tr>
@@ -28,31 +40,28 @@
                             </span>
                         </td>
                         <td>{{ file['title'] }}</td>
+                        <td>{{ file['description'] }}</td> 
+                        <td>{{ file['lastViewedByMeDate']}}</td>
+                        <td>{{ file['modifiedDate']}}</td>
                         <td>
                             <a href="{{ file['alternateLink'] }}" target="_blank">
-                                <button class="button is-light">Open in Google</button>
+                                <button class="button is-light">Open</button>
                             </a>
-                        </td>
-                        <td>
-                            {% if file['mimeType'] == 'application/vnd.google-apps.folder' %}
-                            <a href="{{ url_for('account.open_folder', folder_title=file['title'], folder_id=file['id']) }}">
-                                <button class="button is-light">Expand</button>
-                            </a>
-                            {% else %}
-                            <a href="#">
-                                <button class="button is-light is-disabled">Expand</button>
-                            </a>
-                            {% endif %}
                         </td>
                         <td>
                             <a href="#" target="_blank">
                                 <button class="button is-light">Send</button>
                             </a>
                         </td>
+                        <td>
+                            <a href="{{ url_for('account.view_cart', file_id=file['id']) }}">
+                                <button class="button is-light">Add to cart</button>
+                            </a>
+                        </td>
                     </tr>
                 {% endfor %}
                 </tbody>
-            </ul>
+            </table>
         </div>
     </div>
 </div>
