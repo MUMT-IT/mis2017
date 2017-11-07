@@ -27,7 +27,12 @@
                     </div>
                 </div>
                 <div class="navbar-end">
-                    <a class="navbar-item" href="{{ url_for('auth.main') }}">Account</a>
+                    {% if current_user.is_authenticated %}
+                    <a class="navbar-item" href="{{ url_for('account.view_docs') }}">Account</a>
+                    <a class="navbar-item" href="{{ url_for('auth.weblogout') }}">Log Out</a>
+                    {% else %}
+                    <a class="navbar-item" href="{{ url_for('auth.weblogin') }}">Log In</a>
+                    {% endif %}
                 </div>
             </div>
         </nav>
