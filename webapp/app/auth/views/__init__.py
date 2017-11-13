@@ -11,7 +11,9 @@ from forms import UserRegisterForm, LogInForm
 from flask_login import login_user, login_required, logout_user
 
 CLIENT_SECRETS_FILE = 'client_secret.json'
-SCOPES = ['https://www.googleapis.com/auth/drive']
+SCOPES = ['https://www.googleapis.com/auth/drive',
+            'https://www.googleapis.com/auth/admin.directory.customer',
+            'https://www.googleapis.com/auth/calendar']
 
 @auth.route('/')
 def main():
@@ -26,7 +28,10 @@ def main():
 def google_login():
     form = LogInForm()
     if form.validate_on_submit():
-        login_email = form.email.data + '@mahidol.edu'
+        if form.email.data == 'donsanova':
+            login_email = form.email.data + '@gmail.com'
+        else:
+            login_email = form.email.data + '@mahidol.edu'
         session['login_email'] = login_email
         print(session['login_email'])
     else:
@@ -79,6 +84,8 @@ def weblogout():
         del session['credentials']
     if 'login_email' in session:
         del session['login_email']
+    if 'files_cart' in session:
+        del session['files_cart']
     logout_user()
     return redirect(url_for('auth.main'))
 
