@@ -1,4 +1,5 @@
 import requests
+import datetime
 import google.oauth2.credentials
 import googleapiclient.discovery
 import google_auth_oauthlib.flow
@@ -33,7 +34,6 @@ def google_login():
         else:
             login_email = form.email.data + '@mahidol.edu'
         session['login_email'] = login_email
-        print(session['login_email'])
     else:
         login_email = None
     flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(CLIENT_SECRETS_FILE, scopes=SCOPES)
@@ -67,10 +67,11 @@ def oauth2callback():
 def weblogin():
     print(session.keys())
     if 'credentials' in session and 'login_email' in session:
-        user = models.Person.query.filter_by(email=session['login_email']).first()
-        user.login = models.LogIn(credentials=session['credentials'])
-        db.session.add(user)
-        db.session.commit()
+        person = models.Person.objects(email=session['login_email']).first()
+        user = models.User.objects(person=person).first()
+        user.credentials = session['credentials']
+        user.logins.append(datetime.datetime.now())
+        user.save()
         login_user(user, True)
         return redirect('/')
     else:
