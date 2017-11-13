@@ -6,34 +6,25 @@ import google.oauth2.credentials
 import googleapiclient.discovery
 import pprint
 
+
+def get_credentials():
+    return google.oauth2.credentials.Credentials(
+                            **current_user.credentials)
+
+
 def get_group_service():
-    credentials = google.oauth2.credentials.Credentials(
-        **current_user.login.credentials
-    )
-    group_service = googleapiclient.discovery.build(
-        'admin', 'directory_v1', credentials=credentials
-    )
-    return group_service
+    return googleapiclient.discovery.build(
+            'admin', 'directory_v1', credentials=get_credentials())
 
 
 def get_drive_service():
-    credentials = google.oauth2.credentials.Credentials(
-        **current_user.login.credentials
-    )
-    service = googleapiclient.discovery.build(
-        'drive', 'v2', credentials=credentials
-    )
-    return service
+    return googleapiclient.discovery.build('drive', 'v2',
+                credentials=get_credentials())
 
 
 def get_calendar_service():
-    credentials = google.oauth2.credentials.Credentials(
-        **current_user.login.credentials
-    )
-    service = googleapiclient.discovery.build(
-        'calendar', 'v3', credentials=credentials
-    )
-    return service
+    return googleapiclient.discovery.build(
+        'calendar', 'v3', credentials=get_credentials())
 
 
 def search_folder(title):
@@ -67,10 +58,10 @@ def view_docs():
     folders = []
     folders = search_folder('MISDocs')  # search for system folder
     if not folders:
-        print('MISDocs not found')
+        # print('MISDocs not found')
         folder = create_system_folder()  # app folder does not exist, create one
     else:
-        print('MISDocs found.')
+        # print('MISDocs found.')
         folder = folders[0]
 
     children = drive_service.children().list(folderId=folder['id']).execute()['items']
